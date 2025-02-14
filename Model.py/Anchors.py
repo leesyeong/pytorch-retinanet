@@ -14,7 +14,7 @@ class Anchors(nn.Module):
         self.scales         = scales
 
         if pyramid_levels is None:
-            self.pyramid_levels = [2,3,4,5,6]
+            self.pyramid_levels = [3,4,5,6,7]
         if strides is None:
             self.strides = [2 ** x for x in self.pyramid_levels]
         if sizes is None:
@@ -23,6 +23,9 @@ class Anchors(nn.Module):
             self.ratios = np.array([0.5, 1, 2])
         if scales is None:
             self.scales = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)])
+
+    def __len__(self):
+        return len(self.rations) * len(self.scales)
 
     @property
     def num_anchors(self):
@@ -127,10 +130,6 @@ def shift(shape, stride, anchors):
         shift_x.ravel(), shift_y.ravel()
     )).transpose()
 
-    # add A anchors (1, A, 4) to
-    # cell K shifts (K, 1, 4) to get
-    # shift anchors (K, A, 4)
-    # reshape to (K*A, 4) shifted anchors
     A = anchors.shape[0]
     K = shifts.shape[0]
     all_anchors = (anchors.reshape((1, A, 4)) + shifts.reshape((1, K, 4)).transpose((1, 0, 2)))

@@ -6,6 +6,7 @@ import csv
 import cv2
 import argparse
 
+import matplotlib.pyplot as plt
 
 def load_classes(csv_reader):
     result = {}
@@ -32,10 +33,12 @@ def draw_caption(image, box, caption):
     cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
 
-def detect_image(image_path, model_path, class_list):
+def detect_image(image_path, model_path): #class_list):
 
-    with open(class_list, 'r') as f:
-        classes = load_classes(csv.reader(f, delimiter=','))
+    # with open(class_list, 'r') as f:
+    #     classes = load_classes(csv.reader(f, delimiter=','))
+
+    classes = {'ship': 0}
 
     labels = {}
     for key, value in classes.items():
@@ -49,9 +52,9 @@ def detect_image(image_path, model_path, class_list):
     model.training = False
     model.eval()
 
-    for img_name in os.listdir(image_path):
+    for img_name in [image_path]:
 
-        image = cv2.imread(os.path.join(image_path, img_name))
+        image = cv2.imread(img_name)
         if image is None:
             continue
         image_orig = image.copy()
@@ -115,18 +118,22 @@ def detect_image(image_path, model_path, class_list):
                 draw_caption(image_orig, (x1, y1, x2, y2), caption)
                 cv2.rectangle(image_orig, (x1, y1), (x2, y2), color=(0, 0, 255), thickness=2)
 
-            cv2.imshow('detections', image_orig)
-            cv2.waitKey(0)
+            plt.imshow(cv2.cvtColor(image_orig, cv2.COLOR_BGR2RGB))
+            plt.axis('off')
+            plt.show()
 
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Simple script for visualizing result of training.')
+    # parser = argparse.ArgumentParser(description='Simple script for visualizing result of training.')
 
-    parser.add_argument('--image_dir', help='Path to directory containing images')
-    parser.add_argument('--model_path', help='Path to model')
-    parser.add_argument('--class_list', help='Path to CSV file listing class names (see README)')
+    # parser.add_argument('--image_dir', help='Path to directory containing images')
+    # parser.add_argument('--model_path', help='Path to model')
+    # parser.add_argument('--class_list', help='Path to CSV file listing class names (see README)')
 
-    parser = parser.parse_args()
+    # parser = parser.parse_args()
 
-    detect_image(parser.image_dir, parser.model_path, parser.class_list)
+    image_dir = 'S1A_IW_GRDH_1SDV_20200621T182638_20200621T182703_033119_03D62E_7D45_5_7.png'
+    model_path = 'mssdd_retinanet_3.pt'
+
+    detect_image(image_dir, model_path) #parser.class_list)

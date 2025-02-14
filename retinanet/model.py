@@ -167,20 +167,20 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
 
         if block == BasicBlock:
-            fpn_sizes = [self.layer2[layers[1] - 1].conv2.out_channels, self.layer3[layers[2] - 1].conv2.out_channels,
-                         self.layer4[layers[3] - 1].conv2.out_channels]
+            fpn_sizes = [self.layer1[layers[0] - 1].conv2.out_channels, self.layer2[layers[1] - 1].conv2.out_channels,
+                         self.layer3[layers[2] - 1].conv2.out_channels]
         elif block == Bottleneck:
-            fpn_sizes = [self.layer2[layers[1] - 1].conv3.out_channels, self.layer3[layers[2] - 1].conv3.out_channels,
-                         self.layer4[layers[3] - 1].conv3.out_channels]
+            fpn_sizes = [self.layer1[layers[0] - 1].conv3.out_channels, self.layer2[layers[1] - 1].conv3.out_channels,
+                         self.layer3[layers[2] - 1].conv3.out_channels]
         else:
             raise ValueError(f"Block type {block} not understood")
 
         self.fpn = PyramidFeatures(fpn_sizes[0], fpn_sizes[1], fpn_sizes[2])
 
-        self.regressionModel = RegressionModel(256)
-        self.classificationModel = ClassificationModel(256, num_classes=num_classes)
-
         self.anchors = Anchors()
+        self.regressionModel = RegressionModel(256,num_anchors=self.anchors.num_anchors)
+        self.classificationModel = ClassificationModel(256, num_classes=num_classes, num_anchors=self.anchors.num_anchors)
+
 
         self.regressBoxes = BBoxTransform()
 
@@ -243,9 +243,9 @@ class ResNet(nn.Module):
         x1 = self.layer1(x)
         x2 = self.layer2(x1)
         x3 = self.layer3(x2)
-        x4 = self.layer4(x3)
+        # x4 = self.layer4(x3)
 
-        features = self.fpn([x2, x3, x4])
+        features = self.fpn([x1, x2, x3])
 
         regression = torch.cat([self.regressionModel(feature) for feature in features], dim=1)
 
