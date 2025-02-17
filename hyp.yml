@@ -1,0 +1,20 @@
+TRAINING:
+  mode: normal
+  num_classes: 1
+  batch_size: 4
+  num_epochs: 100
+  learning_rate: 1e-3
+  save_interval: 1
+  log_interval: 10
+  log_progress: true
+  save_best_only: false
+  checkpoint_dir: ./weights
+  resume: false
+  checkpoint_file: none
+  train_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/small_test
+  val_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/val
+  test_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/test
+
+RESOURCES:
+  num_workers: 1
+  gpu_count: 1
