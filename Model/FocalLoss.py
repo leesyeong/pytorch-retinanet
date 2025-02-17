@@ -14,7 +14,7 @@ class FocalLoss(nn.Module):
         num_anchors = anchors.size(0)
 
         # IoU 계산
-        ious = self.box_iou(anchors, gt_boxes)
+        ious = self.box_iou(anchors, gt_boxes[:, :, :4])
         max_ious, max_ids = ious.max(dim=1)
 
         # Positive & Negative Anchor Mask
@@ -45,22 +45,22 @@ class FocalLoss(nn.Module):
 
     def box_iou(self, boxes1, boxes2):
         """
-        IoU 계산 함수 (N, 4) vs (M, 4)
+        IoU 계산 함수 (batch, num, 4) vs (batch, num, 4)
         boxes1, boxes2는 [x1, y1, x2, y2] 형식
         """
-        area1 = (boxes1[:, 2] - boxes1[:, 0]) * (boxes1[:, 3] - boxes1[:, 1])
-        area2 = (boxes2[:, 2] - boxes2[:, 0]) * (boxes2[:, 3] - boxes2[:, 1])
+        area1 = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
+        area2 = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
 
-        inter_x1 = torch.max(boxes1[:, None, 0], boxes2[:, 0])
-        inter_y1 = torch.max(boxes1[:, None, 1], boxes2[:, 1])
-        inter_x2 = torch.min(boxes1[:, None, 2], boxes2[:, 2])
-        inter_y2 = torch.min(boxes1[:, None, 3], boxes2[:, 3])
+        inter_x1 = torch.max(boxes1[..., None, 0], boxes2[..., 0])
+        inter_y1 = torch.max(boxes1[..., None, 1], boxes2[..., 1])
+        inter_x2 = torch.min(boxes1[..., None, 2], boxes2[..., 2])
+        inter_y2 = torch.min(boxes1[..., None, 3], boxes2[..., 3])
 
         inter_w = (inter_x2 - inter_x1).clamp(min=0)
         inter_h = (inter_y2 - inter_y1).clamp(min=0)
         inter_area = inter_w * inter_h
 
-        union_area = area1[:, None] + area2 - inter_area
+        union_area = area1[..., None] + area2 - inter_area
         return inter_area / union_area
 
     def encode_boxes(self, anchors, gt_boxes):

@@ -80,7 +80,7 @@ def GetFiles(rootPath: str, filename: str = '', extension: str = '', isRecursive
         results = filtered
 
     return results
-    
+
 def Xml2Dict(xmlfile: str) -> Union[dict, None]:
     """
     Converts an XML file to a dictionary.
@@ -92,13 +92,13 @@ def Xml2Dict(xmlfile: str) -> Union[dict, None]:
         Union[dict, None]: The converted dictionary or None if conversion fails.
     """
     try:
-        tree = ET.parse(xmlfile)        
-        root = tree.getroot() 
-        result = parse_element(root)            
+        tree = ET.parse(xmlfile)
+        root = tree.getroot()
+        result = parse_element(root)
         return result
     except Exception as e:
         # stdout disable
-        #print(f"Xml To Dict Error : {e}")   
+        #print(f"Xml To Dict Error : {e}")
         return None
 
 def Json2Dict(jsonfile: str) -> Union[dict, None]:
@@ -114,10 +114,10 @@ def Json2Dict(jsonfile: str) -> Union[dict, None]:
     try:
         with open(jsonfile, 'r') as f:
             result = json.load(f)
-            
+
             if result is None or len(result) == 0 or type(result) is not dict:
                 return None
-            
+
             return result
     except Exception as e:
         # stdout disable
@@ -158,9 +158,9 @@ def Pairing(pair1s: List[str], pair2s: List[str]) -> List[Tuple[str, str]]:
     """
     pair2s_dict = {GetFileName(pair2): pair2 for pair2 in pair2s}
     pairs = [(pair1, pair2s_dict[GetFileName(pair1)]) for pair1 in pair1s if GetFileName(pair1) in pair2s_dict]
-    
+
     return pairs
-        
+
 def Remove(filepath: str) -> None:
     """
     Removes a file or directory.
@@ -178,7 +178,7 @@ def Remove(filepath: str) -> None:
             os.remove(filepath)
     else:
         raise FileNotFoundError
-    
+
 def RemoveFiles(files: List[str]) -> None:
     """
     Removes multiple files.
@@ -203,7 +203,7 @@ def RemoveDir(dir: str) -> None:
         os.rmdir(dir)
     else:
         print(f"Directory Not Found : {dir}")
-        
+
 def Exists(path: str) -> bool:
     """
     Checks if a file or directory exists.
