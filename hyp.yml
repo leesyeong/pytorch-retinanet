@@ -1,20 +1,25 @@
 TRAINING:
-  mode: small
+  mode: normal
   num_classes: 1
   batch_size: 8
   num_epochs: 100
-  learning_rate: 1e-3
+  learning_rate: 1e-2
   save_interval: 1
   log_interval: 10
   log_progress: true
   save_best_only: false
-  checkpoint_dir: ./weights
   resume: false
-  checkpoint_file: none
+  checkpoint_dir: ./weights
+  checkpoint_file: mssdd_retinanet_7.pt
   train_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/small_test
   val_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/val
   test_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/test
 
+TEST:
+  batch_size: 4
+  test_data_path: C:/Project/00_Dataset/nas_vol/YOLO_dataset/Sar/Moon-SSDD/split/test
+  checkpoint_file: mssdd_retinanet_2.pt
+
 RESOURCES:
-  num_workers: 1
+  num_workers: 4
   gpu_count: 1

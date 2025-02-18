@@ -38,7 +38,6 @@ class FocalLoss(nn.Module):
         focal_weight = alpha_factor * focal_weight.pow(self.gamma)
         cls_loss = F.binary_cross_entropy_with_logits(cls_preds, cls_targets, reduction='none')
         cls_loss = focal_weight * cls_loss
-        cls_loss = cls_loss[pos_mask | neg_mask].sum() / batch_size
 
         # Smooth L1 Loss 계산 (Regression)
         reg_loss = F.smooth_l1_loss(reg_preds[pos_mask], reg_targets, reduction='sum')

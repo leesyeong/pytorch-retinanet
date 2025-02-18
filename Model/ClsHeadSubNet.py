@@ -33,4 +33,4 @@ class ClsHeadSubNet(nn.Module):
         out = x.permute(0, 2, 3, 1)
         batch_size, height, width, channels = out.shape
         out = out.reshape(batch_size, width, height, self.num_anchors, self.num_classes)
-        return x.reshape(x.shape[0], -1, self.num_classes)
+        return out.reshape(x.shape[0], -1, self.num_classes)

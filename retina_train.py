@@ -1,3 +1,4 @@
+import os
 import collections
 import numpy as np
 import torch
@@ -26,12 +27,14 @@ def main():
                                   num_workers=hyperparameters['RESOURCES']['num_workers'],
                                   collate_fn=MSSDD.collate_fn,
                                   batch_sampler=AspectRatioBasedSampler(dataset_train, batch_size=train_config['batch_size'], drop_last=False))
-    # dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=MSSDD.collate_fn, batch_sampler=AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)) if dataset_val else None
 
     # Initialize model
-    if train_config.get('resume'):
-        retinanet = torch.load(train_config['resume'])
-        print(f'Resuming training from {train_config["resume"]}')
+    start_epoch = 0
+    if train_config['resume']:
+        checkpoint = torch.load(train_config['checkpoint_file'])
+        retinanet = checkpoint['model']
+        start_epoch = checkpoint['epoch'] + 1
+        print(f'Resuming training from {train_config["checkpoint_file"]}, epoch {start_epoch}')
     else:
         retinanet = RetinaNet(train_config['num_classes'], 4, mode=mode)
 
@@ -54,7 +57,7 @@ def main():
     print('Num training images: {}'.format(len(dataset_train)))
 
     # Training loop
-    for epoch_num in range(train_config['num_epochs']):
+    for epoch_num in range(start_epoch, train_config['num_epochs']):
         retinanet.train()
 
         epoch_loss = []
@@ -64,8 +67,8 @@ def main():
 
             with autocast():
                 classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
-                classification_loss = classification_loss.mean()
-                regression_loss = regression_loss.mean()
+                classification_loss = classification_loss.nanmean()
+                regression_loss = regression_loss.nanmean()
                 loss = classification_loss + regression_loss
 
             if bool(loss == 0):
@@ -83,12 +86,16 @@ def main():
             del classification_loss
             del regression_loss
 
+            torch.cuda.empty_cache()
+
+        checkpoint_path = os.path.join(train_config['checkpoint_dir'], f'mssdd_retinanet_{epoch_num}.pt')
 
         scheduler.step(np.mean(epoch_loss))
-        torch.save(retinanet.module, f'mssdd_retinanet_{epoch_num}.pt')
+        torch.save({'model': retinanet.module, 'epoch': epoch_num}, checkpoint_path)
 
     retinanet.eval()
-    torch.save(retinanet, 'model_final.pt')
+    final_checkpoint_path = os.path.join(train_config['checkpoint_dir'], 'final_mssdd_retinanet.pt')
+    torch.save({'model': retinanet.module, 'epoch': epoch_num}, final_checkpoint_path)
 
 if __name__ == '__main__':
     main()

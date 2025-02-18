@@ -8,6 +8,9 @@ import argparse
 
 import matplotlib.pyplot as plt
 
+from utils import readConfig
+
+
 def load_classes(csv_reader):
     result = {}
 
@@ -33,7 +36,7 @@ def draw_caption(image, box, caption):
     cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
 
-def detect_image(image_path, model_path): #class_list):
+def detect_image(image_path, model_path):
 
     # with open(class_list, 'r') as f:
     #     classes = load_classes(csv.reader(f, delimiter=','))
@@ -59,7 +62,9 @@ def detect_image(image_path, model_path): #class_list):
             continue
         image_orig = image.copy()
 
+
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 
         # rows, cols, cns = image.shape
 
@@ -93,6 +98,7 @@ def detect_image(image_path, model_path): #class_list):
         # image = np.expand_dims(image, 0)
         # image = np.transpose(image, (0, 3, 1, 2))
 
+        # image = image/255
         image = np.transpose(image, (2, 0, 1))
         image = image[None, :, :, :]
 
@@ -138,7 +144,9 @@ if __name__ == '__main__':
 
     # parser = parser.parse_args()
 
-    image_dir = 'S1A_IW_GRDH_1SDV_20200606T111723_20200606T111748_032895_03CF78_2122_0_3.png'
-    model_path = 'mssdd_retinanet_1.pt'
+    image_dir = 'S1A_IW_GRDH_1SDV_20200621T182638_20200621T182703_033119_03D62E_7D45_5_7.png'
+    model_path = 'mssdd_retinanet_5.pt'
 
-    detect_image(image_dir, model_path) #parser.class_list)
+    config = readConfig('hyp.yml')
+
+    detect_image(image_dir, config['TEST']['checkpoint_file'])

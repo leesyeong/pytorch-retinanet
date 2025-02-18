@@ -26,7 +26,7 @@ class MSSDD(IDataset):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if isinstance(img, np.ndarray):
-            img = torch.from_numpy(img).float() / self.image_range
+            img = torch.from_numpy(img).float() #/ self.image_range
             img = img.permute(2, 0, 1)
 
         # 어노테이션 가져오기
