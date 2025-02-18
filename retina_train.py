@@ -2,6 +2,7 @@ import collections
 import numpy as np
 import torch
 import torch.optim as optim
+from torch.cuda.amp import autocast, GradScaler
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -48,6 +49,7 @@ def main():
     loss_hist = collections.deque(maxlen=500)
 
     retinanet.train()
+    scaler = GradScaler()
 
     print('Num training images: {}'.format(len(dataset_train)))
 
@@ -58,36 +60,29 @@ def main():
         epoch_loss = []
 
         for iter_num, data in enumerate(dataloader_train):
-            try:
-                optimizer.zero_grad()
+            optimizer.zero_grad()
 
-                if torch.cuda.is_available():
-                    classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
-                else:
-                    classification_loss, regression_loss = retinanet([data['img'].float(), data['annot']])
-
+            with autocast():
+                classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
-
                 loss = classification_loss + regression_loss
 
-                if bool(loss == 0):
-                    continue
-
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
-                optimizer.step()
-
-                loss_hist.append(float(loss))
-                epoch_loss.append(float(loss))
-
-                print(f'Epoch: {epoch_num} | Iteration: {iter_num} | Classification loss: {classification_loss:.5f} | Regression loss: {regression_loss:.5f} | Running loss: {np.mean(loss_hist):.5f}')
-
-                del classification_loss
-                del regression_loss
-            except Exception as e:
-                print(e)
+            if bool(loss == 0):
                 continue
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            loss_hist.append(float(loss))
+            epoch_loss.append(float(loss))
+
+            print(f'Epoch: {epoch_num} | Iteration: {iter_num} | Classification loss: {classification_loss:.5f} | Regression loss: {regression_loss:.5f} | Running loss: {np.mean(loss_hist):.5f}')
+
+            del classification_loss
+            del regression_loss
+
 
         scheduler.step(np.mean(epoch_loss))
         torch.save(retinanet.module, f'mssdd_retinanet_{epoch_num}.pt')

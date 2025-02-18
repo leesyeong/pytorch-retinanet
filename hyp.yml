@@ -1,7 +1,7 @@
 TRAINING:
-  mode: normal
+  mode: small
   num_classes: 1
-  batch_size: 4
+  batch_size: 8
   num_epochs: 100
   learning_rate: 1e-3
   save_interval: 1
